@@ -1,41 +1,31 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap');
 
-/* Default Geo/Espresso Theme */
+/* Default Geo Theme */
 :root {
     --bg: #181411;
     --card-bg: #211b16;
     --accent: #db9d35;
-    --accent-hover: #c48b2d;
     --text-main: #f3ece2;
     --text-muted: #918274;
     --border: #2e2620;
     --danger: #9a4c4c;
     --day-label-bg: #1a1612;
     --header-bg: #1e1915;
-    --break-bg: repeating-linear-gradient(45deg,
-            rgba(46, 38, 32, 0.4),
-            rgba(46, 38, 32, 0.4) 10px,
-            rgba(24, 20, 17, 0.4) 10px,
-            rgba(24, 20, 17, 0.4) 20px);
+    --break-bg: repeating-linear-gradient(45deg, rgba(46, 38, 32, 0.4), rgba(46, 38, 32, 0.4) 10px, rgba(24, 20, 17, 0.4) 10px, rgba(24, 20, 17, 0.4) 20px);
 }
 
-/* March 7th / Faint Pink Theme */
+/* March 7th Theme */
 [data-theme="march7th"] {
     --bg: #fcf5f7;
     --card-bg: #ffffff;
     --accent: #f4a5b9;
-    --accent-hover: #e3869d;
     --text-main: #4a3c40;
     --text-muted: #a38c93;
     --border: #f2e1e6;
     --danger: #d96879;
     --day-label-bg: #faf0f2;
     --header-bg: #fcf5f7;
-    --break-bg: repeating-linear-gradient(45deg,
-            rgba(242, 225, 230, 0.5),
-            rgba(242, 225, 230, 0.5) 10px,
-            rgba(252, 245, 247, 0.5) 10px,
-            rgba(252, 245, 247, 0.5) 20px);
+    --break-bg: repeating-linear-gradient(45deg, rgba(242, 225, 230, 0.5), rgba(242, 225, 230, 0.5) 10px, rgba(252, 245, 247, 0.5) 10px, rgba(252, 245, 247, 0.5) 20px);
 }
 
 * {
@@ -67,6 +57,8 @@ header {
     border-bottom: 1px solid var(--border);
     padding-bottom: 20px;
     margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 15px;
 }
 
 .header-actions {
@@ -88,16 +80,15 @@ h1 {
     margin-top: 4px;
 }
 
-/* Buttons */
 button {
     font-family: inherit;
     font-weight: 500;
     cursor: pointer;
     border: none;
-    padding: 10px 18px;
-    border-radius: 4px;
+    padding: 12px 20px;
+    border-radius: 6px;
     transition: all 0.2s ease;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
 }
 
 .btn-primary {
@@ -106,7 +97,7 @@ button {
 }
 
 .btn-primary:hover {
-    background-color: var(--accent-hover);
+    opacity: 0.85;
 }
 
 .btn-secondary {
@@ -120,12 +111,32 @@ button {
     color: var(--text-main);
 }
 
-/* Table UI */
+input[type="color"] {
+    padding: 0;
+    border: none;
+    border-radius: 4px;
+    height: 44px;
+    cursor: pointer;
+    width: 100%;
+    background: transparent;
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+input[type="color"]::-webkit-color-swatch {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+}
+
+/* Matrix View */
 .table-container {
     background-color: var(--bg);
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: 8px;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .timeline-header {
@@ -176,13 +187,11 @@ button {
     min-width: 900px;
 }
 
-/* 1:00 - 1:50 PM Break Overlay */
+/* JS handles Left/Width calculations for Break */
 .break-column {
     position: absolute;
     top: 0;
     bottom: 0;
-    left: calc(50% + 50px);
-    width: calc((100% - 100px) * 0.08333);
     background: var(--break-bg);
     border-left: 1px solid var(--border);
     border-right: 1px solid var(--border);
@@ -203,7 +212,7 @@ button {
 
 .day-row {
     display: flex;
-    height: 90px;
+    height: 95px;
     border-bottom: 1px solid var(--border);
 }
 
@@ -231,13 +240,13 @@ button {
 
 .class-block {
     position: absolute;
-    top: 10px;
-    bottom: 10px;
+    top: 12px;
+    bottom: 12px;
     background-color: var(--card-bg);
     border: 1px solid var(--border);
-    border-left: 3px solid var(--accent);
-    border-radius: 4px;
-    padding: 8px;
+    border-left: 4px solid var(--accent);
+    border-radius: 6px;
+    padding: 10px;
     overflow: hidden;
     z-index: 2;
     transition: transform 0.2s, border-color 0.2s;
@@ -258,6 +267,7 @@ button {
     text-overflow: ellipsis;
     margin-bottom: 4px;
     color: var(--text-main);
+    padding-right: 40px;
 }
 
 .class-meta {
@@ -265,22 +275,105 @@ button {
     color: var(--text-muted);
 }
 
-.delete-btn {
+/* Action Buttons (Edit & Delete) */
+.action-btns {
     position: absolute;
-    top: 4px;
-    right: 4px;
+    top: 6px;
+    right: 6px;
+    display: flex;
+    gap: 4px;
+}
+
+.action-btn {
     background: transparent;
     color: var(--text-muted);
-    padding: 0;
+    padding: 4px;
     font-size: 1rem;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     line-height: 1;
 }
 
-.delete-btn:hover {
+.action-btn.edit:hover {
+    color: var(--accent);
+}
+
+.action-btn.delete:hover {
     color: var(--danger);
 }
 
-/* Modal */
+/* Mobile Agenda View */
+.mobile-list {
+    display: none;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.mobile-day-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.mobile-day-header {
+    background-color: var(--day-label-bg);
+    padding: 12px 16px;
+    font-weight: 600;
+    color: var(--accent);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.mobile-class-item {
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    border-left: 4px solid var(--accent);
+}
+
+.mobile-class-item:last-child {
+    border-bottom: none;
+}
+
+.mobile-class-time {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-bottom: 6px;
+}
+
+.mobile-class-title {
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: var(--text-main);
+    margin-bottom: 4px;
+    padding-right: 50px;
+}
+
+.mobile-class-loc {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.mobile-class-item .action-btns {
+    top: 16px;
+    right: 12px;
+}
+
+.empty-day {
+    padding: 16px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+/* Modals */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -293,6 +386,7 @@ button {
     align-items: center;
     backdrop-filter: blur(4px);
     z-index: 100;
+    padding: 20px;
 }
 
 .modal-overlay.hidden {
@@ -306,6 +400,9 @@ button {
     width: 100%;
     max-width: 400px;
     color: var(--text-main);
+    border-radius: 8px;
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 .modal h2 {
@@ -334,16 +431,18 @@ label {
     margin-bottom: 6px;
 }
 
-input,
+input[type="text"],
+input[type="time"],
 select {
     width: 100%;
     background-color: var(--bg);
     border: 1px solid var(--border);
     color: var(--text-main);
-    padding: 10px;
+    padding: 12px;
     font-family: inherit;
     font-size: 0.95rem;
     outline: none;
+    border-radius: 6px;
 }
 
 input:focus,
@@ -356,4 +455,31 @@ select:focus {
     justify-content: flex-end;
     gap: 12px;
     margin-top: 24px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    #matrixView {
+        display: none;
+    }
+
+    .mobile-list {
+        display: flex;
+    }
+
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .header-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    button {
+        padding: 12px;
+        flex: 1;
+        text-align: center;
+    }
 }
