@@ -1,3 +1,5 @@
+// egg
+
 document.addEventListener('DOMContentLoaded', () => {
     // --- Data Models ---
     let classes = JSON.parse(localStorage.getItem('geoTableData')) || [];
