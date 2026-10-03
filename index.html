@@ -75,15 +75,14 @@
 
                 <hr style="border: 0; border-top: 1px dashed var(--border); margin: 20px 0;">
 
-                <!-- Theme Presets -->
+                <!-- Theme Presets (Dynamically populated) -->
                 <label style="font-weight: 600; color: var(--text-main); margin-bottom: 12px; display: block;">Theme
                     Presets</label>
-                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                    <button type="button" id="btnGeoPreset" class="btn-secondary" style="flex: 1;">Geo (Dark)</button>
-                    <button type="button" id="btnMarchPreset" class="btn-secondary" style="flex: 1;">March 7th</button>
+                <div id="presetContainer" class="preset-container">
+                    <!-- Preset buttons injected here -->
                 </div>
 
-                <!-- Custom Theme -->
+                <!-- Custom Colors -->
                 <label style="font-weight: 600; color: var(--text-main); margin-bottom: 12px; display: block;">Custom
                     Colors</label>
                 <div class="form-group row">
@@ -111,9 +110,23 @@
                     <input type="color" id="customText">
                 </div>
 
+                <!-- Save Theme Feature -->
+                <div class="save-theme-box">
+                    <div class="form-group row" style="align-items: flex-end; margin-bottom: 0;">
+                        <div class="col" style="flex: 2;">
+                            <label>Save these colors as a preset</label>
+                            <input type="text" id="newThemeName" placeholder="e.g. Midnight Blue">
+                        </div>
+                        <div class="col" style="flex: 1;">
+                            <button type="button" id="savePresetBtn" class="btn-secondary"
+                                style="width: 100%; height: 44px; padding: 0;">Save Theme</button>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="modal-actions">
                     <button type="button" id="closeThemeBtn" class="btn-secondary">Cancel</button>
-                    <button type="submit" class="btn-primary">Save Settings</button>
+                    <button type="submit" class="btn-primary">Apply Settings</button>
                 </div>
             </form>
         </div>

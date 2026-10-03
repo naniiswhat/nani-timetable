@@ -1,7 +1,18 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- State & Setup ---
+    // --- Data Models ---
     let classes = JSON.parse(localStorage.getItem('geoTableData')) || [];
-    let editingClassId = null; // Tracks if we are editing vs adding
+    let editingClassId = null;
+    let breakSettings = JSON.parse(localStorage.getItem('breakSettings')) || { start: '13:00', end: '13:50' };
+
+    // Core Themes
+    const BUILTIN_THEMES = {
+        'geo': { name: 'Geo (Dark)', bg: '#181411', card: '#211b16', accent: '#db9d35', border: '#2e2620', text: '#f3ece2' },
+        'march7th': { name: 'March 7th', bg: '#fcf5f7', card: '#ffffff', accent: '#f4a5b9', border: '#f2e1e6', text: '#4a3c40' }
+    };
+
+    // User stored themes & active configuration
+    let userThemes = JSON.parse(localStorage.getItem('userThemes')) || {};
+    let activeColors = JSON.parse(localStorage.getItem('activeColors')) || BUILTIN_THEMES['geo'];
 
     const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
     const DAY_START_MINS = 8 * 60;
@@ -11,71 +22,118 @@ document.addEventListener('DOMContentLoaded', () => {
     const gridBody = document.getElementById('gridBody');
     const mobileList = document.getElementById('mobileList');
 
-    // Class Modal Elements
-    const addBtn = document.getElementById('addBtn');
+    // Modals
     const classModalOverlay = document.getElementById('modalOverlay');
-    const cancelBtn = document.getElementById('cancelBtn');
     const classForm = document.getElementById('classForm');
     const classModalTitle = document.getElementById('classModalTitle');
-
-    // Theme & Settings Elements
-    const themeSettingsBtn = document.getElementById('themeSettingsBtn');
     const themeModalOverlay = document.getElementById('themeModalOverlay');
-    const closeThemeBtn = document.getElementById('closeThemeBtn');
     const themeForm = document.getElementById('themeForm');
-    const btnGeoPreset = document.getElementById('btnGeoPreset');
-    const btnMarchPreset = document.getElementById('btnMarchPreset');
 
-    // --- Settings / Theme Logic ---
-    let currentThemeMode = localStorage.getItem('themeMode') || 'geo';
-    let customColors = JSON.parse(localStorage.getItem('customColors')) || {
-        bg: '#181411', card: '#211b16', accent: '#db9d35', border: '#2e2620', text: '#f3ece2'
-    };
-    let breakSettings = JSON.parse(localStorage.getItem('breakSettings')) || {
-        start: '13:00', end: '13:50'
-    };
-
-    function applyTheme() {
+    // --- Theme Engine ---
+    function applyColorsToDOM(colors) {
         const root = document.documentElement;
-        root.style = ''; // Reset custom inline styles
+        root.style.setProperty('--bg', colors.bg);
+        root.style.setProperty('--card-bg', colors.card);
+        root.style.setProperty('--accent', colors.accent);
+        root.style.setProperty('--border', colors.border);
+        root.style.setProperty('--text-main', colors.text);
 
-        if (currentThemeMode === 'geo') {
-            root.removeAttribute('data-theme');
-        } else if (currentThemeMode === 'march7th') {
-            root.setAttribute('data-theme', 'march7th');
-        } else if (currentThemeMode === 'custom') {
-            root.removeAttribute('data-theme');
-            root.style.setProperty('--bg', customColors.bg);
-            root.style.setProperty('--card-bg', customColors.card);
-            root.style.setProperty('--accent', customColors.accent);
-            root.style.setProperty('--border', customColors.border);
-            root.style.setProperty('--text-main', customColors.text);
-            root.style.setProperty('--day-label-bg', customColors.card);
-            root.style.setProperty('--header-bg', customColors.bg);
-            root.style.setProperty('--text-muted', customColors.text + '99');
-            root.style.setProperty('--break-bg', `repeating-linear-gradient(45deg, transparent, transparent 10px, ${customColors.text}1a 10px, ${customColors.text}1a 20px)`);
-        }
+        // Derive secondary UI colors dynamically
+        root.style.setProperty('--day-label-bg', colors.card);
+        root.style.setProperty('--header-bg', colors.bg);
+        root.style.setProperty('--text-muted', colors.text + '99'); // Appends hex transparency
+        root.style.setProperty('--break-bg', `repeating-linear-gradient(45deg, transparent, transparent 10px, ${colors.text}1a 10px, ${colors.text}1a 20px)`);
     }
 
-    applyTheme(); // Run on load
+    function syncPickersToColors(colors) {
+        document.getElementById('customBg').value = colors.bg;
+        document.getElementById('customCard').value = colors.card;
+        document.getElementById('customAccent').value = colors.accent;
+        document.getElementById('customBorder').value = colors.border;
+        document.getElementById('customText').value = colors.text;
+    }
 
-    // Open Settings Modal
-    themeSettingsBtn.addEventListener('click', () => {
+    function renderThemePresets() {
+        const container = document.getElementById('presetContainer');
+        container.innerHTML = '';
+
+        // Render Built-in Themes
+        Object.keys(BUILTIN_THEMES).forEach(key => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'btn-secondary preset-btn';
+            btn.textContent = BUILTIN_THEMES[key].name;
+            btn.onclick = () => syncPickersToColors(BUILTIN_THEMES[key]);
+            container.appendChild(btn);
+        });
+
+        // Render User Saved Themes
+        Object.keys(userThemes).forEach(key => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'user-preset-wrapper';
+
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'btn-secondary preset-btn';
+            btn.textContent = userThemes[key].name;
+            btn.onclick = () => syncPickersToColors(userThemes[key]);
+
+            const delBtn = document.createElement('button');
+            delBtn.type = 'button';
+            delBtn.className = 'delete-preset-btn';
+            delBtn.innerHTML = '&times;';
+            delBtn.title = 'Delete theme';
+            delBtn.onclick = (e) => {
+                e.stopPropagation(); // Prevents button underneath from triggering
+                delete userThemes[key];
+                localStorage.setItem('userThemes', JSON.stringify(userThemes));
+                renderThemePresets();
+            };
+
+            wrapper.appendChild(btn);
+            wrapper.appendChild(delBtn);
+            container.appendChild(wrapper);
+        });
+    }
+
+    // Apply colors on initial load
+    applyColorsToDOM(activeColors);
+
+    // Opening Settings Modal
+    document.getElementById('themeSettingsBtn').addEventListener('click', () => {
+        syncPickersToColors(activeColors); // Set pickers to current active colors
         document.getElementById('breakStart').value = breakSettings.start;
         document.getElementById('breakEnd').value = breakSettings.end;
-
-        document.getElementById('customBg').value = customColors.bg;
-        document.getElementById('customCard').value = customColors.card;
-        document.getElementById('customAccent').value = customColors.accent;
-        document.getElementById('customBorder').value = customColors.border;
-        document.getElementById('customText').value = customColors.text;
-
+        renderThemePresets();
         themeModalOverlay.classList.remove('hidden');
     });
 
-    closeThemeBtn.addEventListener('click', () => themeModalOverlay.classList.add('hidden'));
+    document.getElementById('closeThemeBtn').addEventListener('click', () => {
+        themeModalOverlay.classList.add('hidden');
+    });
 
-    // Save Settings
+    // Save as New Preset Button
+    document.getElementById('savePresetBtn').addEventListener('click', () => {
+        const nameInput = document.getElementById('newThemeName');
+        const themeName = nameInput.value.trim() || 'Custom Theme';
+        const newId = 'theme_' + Date.now();
+
+        const newPresetColors = {
+            bg: document.getElementById('customBg').value,
+            card: document.getElementById('customCard').value,
+            accent: document.getElementById('customAccent').value,
+            border: document.getElementById('customBorder').value,
+            text: document.getElementById('customText').value
+        };
+
+        userThemes[newId] = { name: themeName, ...newPresetColors };
+        localStorage.setItem('userThemes', JSON.stringify(userThemes));
+
+        nameInput.value = ''; // Reset input
+        renderThemePresets(); // Refresh buttons
+    });
+
+    // Apply & Save Settings Form
     themeForm.addEventListener('submit', (e) => {
         e.preventDefault();
 
@@ -88,7 +146,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         breakSettings = { start: bStart, end: bEnd };
-        customColors = {
+
+        // Grab whatever is currently sitting in the color pickers
+        activeColors = {
             bg: document.getElementById('customBg').value,
             card: document.getElementById('customCard').value,
             accent: document.getElementById('customAccent').value,
@@ -96,30 +156,16 @@ document.addEventListener('DOMContentLoaded', () => {
             text: document.getElementById('customText').value
         };
 
-        currentThemeMode = 'custom';
-        localStorage.setItem('themeMode', currentThemeMode);
-        localStorage.setItem('customColors', JSON.stringify(customColors));
+        localStorage.setItem('activeColors', JSON.stringify(activeColors));
         localStorage.setItem('breakSettings', JSON.stringify(breakSettings));
 
-        applyTheme();
-        saveAndRender(); // Re-render to update break graphic
+        applyColorsToDOM(activeColors);
+        saveAndRender();
         themeModalOverlay.classList.add('hidden');
     });
 
-    // Theme Presets
-    btnGeoPreset.addEventListener('click', () => {
-        currentThemeMode = 'geo';
-        localStorage.setItem('themeMode', currentThemeMode);
-        applyTheme();
-    });
 
-    btnMarchPreset.addEventListener('click', () => {
-        currentThemeMode = 'march7th';
-        localStorage.setItem('themeMode', currentThemeMode);
-        applyTheme();
-    });
-
-    // --- Core Timetable Logic ---
+    // --- Core Timetable Matrix Logic ---
     function saveAndRender() {
         localStorage.setItem('geoTableData', JSON.stringify(classes));
         renderMatrix();
@@ -143,7 +189,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderMatrix() {
         const breakCol = gridBody.querySelector('.break-column');
 
-        // Calculate dynamic break column position
         const bStartMins = timeToMinutes(breakSettings.start);
         const bEndMins = timeToMinutes(breakSettings.end);
         let bLeft = (bStartMins - DAY_START_MINS) / TOTAL_DAY_MINS;
@@ -155,7 +200,6 @@ document.addEventListener('DOMContentLoaded', () => {
         breakCol.style.left = `calc(100px + (100% - 100px) * ${bLeft})`;
         breakCol.style.width = `calc((100% - 100px) * ${bWidth})`;
 
-        // Preserve break column, wipe rows
         const breakHtml = breakCol.outerHTML;
         gridBody.innerHTML = breakHtml;
 
@@ -237,7 +281,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Action Listeners (Edit & Delete) ---
     function attachActionListeners() {
-        // Delete
         document.querySelectorAll('.action-btn.delete').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const id = e.currentTarget.getAttribute('data-id');
@@ -246,7 +289,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        // Edit
         document.querySelectorAll('.action-btn.edit').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const id = e.currentTarget.getAttribute('data-id');
@@ -276,12 +318,12 @@ document.addEventListener('DOMContentLoaded', () => {
         classModalOverlay.classList.add('hidden');
     }
 
-    addBtn.addEventListener('click', () => {
+    document.getElementById('addBtn').addEventListener('click', () => {
         resetClassForm();
         classModalOverlay.classList.remove('hidden');
     });
 
-    cancelBtn.addEventListener('click', resetClassForm);
+    document.getElementById('cancelBtn').addEventListener('click', resetClassForm);
 
     classForm.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -298,7 +340,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (editingClassId) {
-            // Update existing class
             classes = classes.map(c => {
                 if (c.id == editingClassId) {
                     return { ...c, subject, location, day, startTime, endTime };
@@ -306,17 +347,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 return c;
             });
         } else {
-            // Create new class
-            classes.push({
-                id: Date.now(),
-                subject, location, day, startTime, endTime
-            });
+            classes.push({ id: Date.now(), subject, location, day, startTime, endTime });
         }
 
         saveAndRender();
         resetClassForm();
     });
 
-    // Initial Start
+    // Initialize Layout
     saveAndRender();
 });

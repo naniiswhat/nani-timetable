@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap');
 
-/* Default Geo Theme */
 :root {
+    /* Base fallbacks. These are fully managed by JavaScript now. */
     --bg: #181411;
     --card-bg: #211b16;
     --accent: #db9d35;
@@ -11,21 +11,7 @@
     --danger: #9a4c4c;
     --day-label-bg: #1a1612;
     --header-bg: #1e1915;
-    --break-bg: repeating-linear-gradient(45deg, rgba(46, 38, 32, 0.4), rgba(46, 38, 32, 0.4) 10px, rgba(24, 20, 17, 0.4) 10px, rgba(24, 20, 17, 0.4) 20px);
-}
-
-/* March 7th Theme */
-[data-theme="march7th"] {
-    --bg: #fcf5f7;
-    --card-bg: #ffffff;
-    --accent: #f4a5b9;
-    --text-main: #4a3c40;
-    --text-muted: #a38c93;
-    --border: #f2e1e6;
-    --danger: #d96879;
-    --day-label-bg: #faf0f2;
-    --header-bg: #fcf5f7;
-    --break-bg: repeating-linear-gradient(45deg, rgba(242, 225, 230, 0.5), rgba(242, 225, 230, 0.5) 10px, rgba(252, 245, 247, 0.5) 10px, rgba(252, 245, 247, 0.5) 20px);
+    --break-bg: transparent;
 }
 
 * {
@@ -187,7 +173,6 @@ input[type="color"]::-webkit-color-swatch {
     min-width: 900px;
 }
 
-/* JS handles Left/Width calculations for Break */
 .break-column {
     position: absolute;
     top: 0;
@@ -275,7 +260,6 @@ input[type="color"]::-webkit-color-swatch {
     color: var(--text-muted);
 }
 
-/* Action Buttons (Edit & Delete) */
 .action-btns {
     position: absolute;
     top: 6px;
@@ -398,7 +382,7 @@ input[type="color"]::-webkit-color-swatch {
     border: 1px solid var(--border);
     padding: 30px;
     width: 100%;
-    max-width: 400px;
+    max-width: 450px;
     color: var(--text-main);
     border-radius: 8px;
     max-height: 90vh;
@@ -457,7 +441,49 @@ select:focus {
     margin-top: 24px;
 }
 
-/* Responsive */
+/* Preset Box Styles */
+.preset-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.user-preset-wrapper {
+    display: inline-flex;
+    position: relative;
+}
+
+.delete-preset-btn {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--border);
+    color: var(--text-main);
+    border: none;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+}
+
+.delete-preset-btn:hover {
+    background: var(--danger);
+}
+
+.save-theme-box {
+    margin-top: 25px;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px dashed var(--border);
+    background: rgba(0, 0, 0, 0.1);
+}
+
 @media (max-width: 768px) {
     #matrixView {
         display: none;
