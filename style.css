@@ -49,6 +49,32 @@ header {
     gap: 15px;
 }
 
+.title-group {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.app-logo {
+    width: 54px;
+    height: 54px;
+    object-fit: contain;
+    border-radius: 10px;
+    /* Smooth corners */
+    background-color: var(--card-bg);
+    /* Adapts to your Geo/March 7th/Custom theme */
+    border: 1px solid var(--border);
+    padding: 6px;
+    /* Gives the logo some breathing room inside the box */
+    transition: border-color 0.3s ease, transform 0.2s ease;
+}
+
+/* Optional: Gives the logo a slight interactive bump and glow when hovered */
+.app-logo:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+}
+
 .header-actions {
     display: flex;
     gap: 12px;
